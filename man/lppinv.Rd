@@ -72,13 +72,14 @@ Solve a linear program via Convex Least Squares Programming (CLSP).
   ## Linear Programming via Regularized Least Squares (LPPinv)
   ## Underdetermined and potentially infeasible LP system
 
+  RNGkind("L'Ecuyer-CMRG")
   set.seed(123456789)
 
   # sample (dataset)
-  A_ub <- matrix(rnorm(50 * 500), nrow = 50, ncol = 500)
-  A_eq <- matrix(rnorm(25 * 500), nrow = 25, ncol = 500)
-  b_ub <- matrix(rnorm(50),       ncol = 1)
-  b_eq <- matrix(rnorm(25),       ncol = 1)
+  A_ub <- matrix(rnorm(50 * 500), nrow = 50L, ncol = 500L)
+  A_eq <- matrix(rnorm(25 * 500), nrow = 25L, ncol = 500L)
+  b_ub <- matrix(rnorm(50),       ncol = 1L)
+  b_eq <- matrix(rnorm(25),       ncol = 1L)
 
   # model (no default non-negativity, unique MNBLUE solution)
   model <- lppinv(
@@ -122,7 +123,7 @@ Solve a linear program via Convex Least Squares Programming (CLSP).
   # bootstrap NRMSE t-test (if supported by rclsp)
   if ("ttest" \%in\% names(model)) {
       cat("\nBootstrap t-test:\n")
-      tt <- model$ttest(sample_size = 30,
+      tt <- model$ttest(sample_size = 30L,
                         seed = 123456789,
                         distribution = "normal")
       for (nm in names(tt)) {

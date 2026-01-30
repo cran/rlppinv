@@ -52,13 +52,14 @@
 #'   ## Linear Programming via Regularized Least Squares (LPPinv)
 #'   ## Underdetermined and potentially infeasible LP system
 #'
+#'   RNGkind("L'Ecuyer-CMRG")
 #'   set.seed(123456789)
 #'
 #'   # sample (dataset)
-#'   A_ub <- matrix(rnorm(50 * 500), nrow = 50, ncol = 500)
-#'   A_eq <- matrix(rnorm(25 * 500), nrow = 25, ncol = 500)
-#'   b_ub <- matrix(rnorm(50),       ncol = 1)
-#'   b_eq <- matrix(rnorm(25),       ncol = 1)
+#'   A_ub <- matrix(rnorm(50 * 500), nrow = 50L, ncol = 500L)
+#'   A_eq <- matrix(rnorm(25 * 500), nrow = 25L, ncol = 500L)
+#'   b_ub <- matrix(rnorm(50),       ncol = 1L)
+#'   b_eq <- matrix(rnorm(25),       ncol = 1L)
 #'
 #'   # model (no default non-negativity, unique MNBLUE solution)
 #'   model <- lppinv(
@@ -102,7 +103,7 @@
 #'   # bootstrap NRMSE t-test (if supported by rclsp)
 #'   if ("ttest" %in% names(model)) {
 #'       cat("\nBootstrap t-test:\n")
-#'       tt <- model$ttest(sample_size = 30,
+#'       tt <- model$ttest(sample_size = 30L,
 #'                         seed = 123456789,
 #'                         distribution = "normal")
 #'       for (nm in names(tt)) {
@@ -122,9 +123,9 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
   dots$b <- NULL
   # assert conformability of constraint sets (A_ub, b_ub) and (A_eq, b_eq)
   if (!((( !is.null(A_ub) && !is.null(b_ub))  ||
-          (!is.null(A_eq) && !is.null(b_eq))) &&
-       !xor(is.null(A_ub),    is.null(b_ub))  &&
-       !xor(is.null(A_eq),    is.null(b_eq))))
+         (!is.null(A_eq) && !is.null(b_eq))) &&
+        !xor(is.null(A_ub),    is.null(b_ub))  &&
+        !xor(is.null(A_eq),    is.null(b_eq))))
     stop(paste0("At least one complete constraint set (A_ub, b_ub) or ",
                 "(A_eq, b_eq) must be provided."))
   if (!is.null(A_ub)) {
@@ -145,7 +146,7 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
                    nrow(A_eq), nrow(b_eq)))
     n_vars <- ncol(A_eq)                               # number of variables
   }
-
+  
   # (b) Construct the right-hand side vector
   if        (is.null(bounds))      {
     bounds <- list(c(if (isTRUE(non_negative)) 0 else NA_real_, NA_real_))
@@ -159,10 +160,10 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
   bounds   <- lapply(bounds, function(v)   {
     if (length(v) != 2L)     stop("Each bounds element must have length 2.")
     vapply(v, function(x)    if (is.null(x) || is.na(x) || length(x) != 1L )
-    NA_real_                 else           as.numeric(x), numeric(1L))
+      NA_real_                 else           as.numeric(x), numeric(1L))
   })
   if (isTRUE(non_negative)   &&  any(vapply(bounds, function(v)
-     (!is.na(v[1]) && v[1] < 0)  ||  (!is.na(v[2]) && v[2] < 0), logical(1L))))
+    (!is.na(v[1]) && v[1] < 0)  ||  (!is.na(v[2]) && v[2] < 0), logical(1L))))
     stop("Negative lower or upper bounds are not allowed in linear programs.")
   b <- matrix(numeric(0L),   ncol=1L)
   if (!is.null(b_ub)) b <-   rbind(b, b_ub)
@@ -171,10 +172,11 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
                                     else                          v[2],
                                     numeric(1L)),
                              vapply(bounds, function(v) if (is.na(v[1]))
-                                    if (isTRUE(non_negative))       0 else -Inf
-                                    else                          v[1],
-                                    numeric(1L))),        ncol=1))
-
+                               if (isTRUE(non_negative))       0 else -Inf
+                               else                          v[1],
+                               numeric(1L))),
+                       ncol=1L))
+  
   # (C), (S) Construct conformable blocks for the design matrix A
   if (!is.null(A_ub) && !is.null(A_eq)) if (ncol(A_ub) != ncol(A_eq))
     stop(sprintf(paste0("A_ub and A_eq must have the same number of columns: ",
@@ -194,14 +196,14 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
                       cbind(   matrix(0, nrow=n_vars,  ncol=          ncol(S)),
                                diag(n_vars),
                                matrix(0, nrow=n_vars,  ncol=          n_vars)),
-                     -cbind(   matrix(0, nrow=n_vars,  ncol=ncol(S) + n_vars),
-                               diag(n_vars)))
-
+                      -cbind(   matrix(0, nrow=n_vars,  ncol=ncol(S) + n_vars),
+                                diag(n_vars)))
+  
   # (result) Perform the estimation
   if (nrow(C) != nrow(S) || nrow(C) != nrow(b))
     stop(sprintf("Row mismatch: C=%s, S=%s, b=%s", paste(dim(C), collapse="x"),
-                                                   paste(dim(S), collapse="x"),
-                                                   paste(dim(b), collapse="x")))
+                 paste(dim(S), collapse="x"),
+                 paste(dim(b), collapse="x")))
   finite_rows   <- is.finite(b[, 1L])                  # drop rows with +-np.inf
   nonzero_cols  <- colSums(S[finite_rows, ,
                              drop=FALSE]  != 0) > 0    # reduce S width
@@ -213,16 +215,16 @@ lppinv <- function(c=NULL, A_ub=NULL, b_ub= NULL, A_eq=NULL, b_eq=NULL,
                                                  tolerance=tolerance,
                                                  final=final, alpha=alpha),
                                             dots))
-
+  
   # (result) Replace out-of-bound values with replace_value
-  x        <- matrix(result$x, ncol=1)
+  x        <- matrix(result$x, ncol=1L)
   x_lb     <- vapply(bounds, function(v) if (is.na(v[1]))
-                                         if (isTRUE(non_negative))  0 else -Inf
-                     else                          v[1], numeric(1L))
+    if (isTRUE(non_negative))  0 else -Inf
+    else                          v[1], numeric(1L))
   x_ub     <- vapply(bounds, function(v) if (is.na(v[2]))                   Inf
                      else                          v[2], numeric(1L))
   x[(x < x_lb - tolerance) | (x > x_ub + tolerance)] <- replace_value
-  result$x <- matrix(x, nrow=nrow(result$x),  ncol=ncol(result$x))
-
+  result$x <- matrix(x, nrow=nrow(result$x),  ncol=ncol(result$x),  byrow=TRUE)
+  
   result
 }

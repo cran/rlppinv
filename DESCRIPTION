@@ -1,7 +1,7 @@
 Package: rlppinv
 Type: Package
 Title: Linear Programming via Regularized Least Squares
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     c(
         person("Ilya", "Bolotov", email = "ilya.bolotov@vse.cz",
@@ -23,16 +23,16 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
 Depends: R (>= 4.2)
-Imports: rclsp
+Imports: rclsp (>= 0.3.0)
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://github.com/econcz/rlppinv
 BugReports: https://github.com/econcz/rlppinv/issues
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-11-28 01:13:20 UTC; ilyabolotov
+Packaged: 2026-01-30 20:41:52 UTC; ilyabolotov
 Author: Ilya Bolotov [aut, cre] (ORCID:
     <https://orcid.org/0000-0003-1148-7144>)
 Maintainer: Ilya Bolotov <ilya.bolotov@vse.cz>
 Repository: CRAN
-Date/Publication: 2025-12-03 20:30:13 UTC
+Date/Publication: 2026-01-30 20:50:02 UTC
